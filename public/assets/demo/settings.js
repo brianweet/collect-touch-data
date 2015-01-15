@@ -6,10 +6,10 @@ var SettingsHandler = function(app) {
   this.app = app;
 
   this.settings = new Map();
-  this.settings.set('keyboard.wordsuggestion', true);
-  this.settings.set('keyboard.autocorrect', true);
-  this.settings.set('keyboard.vibration', true);
-  this.settings.set('audio.volume.notification', 10);
+  this.settings.set('keyboard.wordsuggestion', false);
+  this.settings.set('keyboard.autocorrect', false);
+  this.settings.set('keyboard.vibration', false);
+  this.settings.set('audio.volume.notification', 0);
   this.settings.set('keyboard.handwriting.strokeWidth', 10);
   this.settings.set('keyboard.handwriting.responseTime', 500);
 };

@@ -83,8 +83,7 @@ var KeyboardLayouts = function(app) {
     to show case the diversity of the feature the keyboard app
     and IMEngine provided. */
   this.enabledLayouts =
-    ['en', 'el', 'es', 'fr', 'ko', 'vi-Typewriter', 'zh-Hans-Pinyin',
-      'zh-Hant-Zhuyin', 'bn-Avro', 'ru', 'ar', 'he', 'ta'].sort();
+    ['en'];
 
   this.currentLayout = undefined;
 
