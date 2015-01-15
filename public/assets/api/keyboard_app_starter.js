@@ -13,6 +13,7 @@ var KeyboardAppStarter = function() {
 KeyboardAppStarter.prototype.CACHE_BUSTING_HASH = 'b47afb4';
 
 KeyboardAppStarter.prototype.start = function() {
+  //debugger;
   window.history.replaceState(null, '', window.location.hash.substr(1));
 
   this._getIndexHTMLContent()
@@ -134,6 +135,7 @@ KeyboardAppStarter.prototype._getIndexHTMLContent = function() {
 };
 
 KeyboardAppStarter.prototype._prepareDOM = function(sourceDoc) {
+  //debugger;
   // Clean up the document.
   document.documentElement.firstElementChild.innerHTML = '';
   document.body.innerHTML = '';
@@ -143,9 +145,11 @@ KeyboardAppStarter.prototype._prepareDOM = function(sourceDoc) {
   // Copy the imported DOM into the document.
   var sourceHeadNode = document.importNode(
     sourceDoc.documentElement.firstElementChild, true);
+  console.log(sourceHeadNode);
+  console.log(sourceDoc.body);
   var sourceBodyNode = document.importNode(sourceDoc.body, true);
 
-  ['../../../assets/api.css'].forEach(function(url) {
+  ['/assets/api.css'].forEach(function(url) {
       var el = document.createElement('link');
       el.href = url;
       el.rel = 'stylesheet';

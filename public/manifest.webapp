@@ -1,0 +1,18 @@
+{
+    "version":"0.0.1",
+  "name": "Collect touch data",
+    "description": "",
+    "launch_path": "/index.html",
+    "icons": {
+        "128": "/icon.png"
+    },
+	"developer": {
+        "name": "Brian Weeteling",
+        "url": ""
+    },
+    "default_locale": "en-US",
+	"type": "privileged",
+    "permissions": {
+        "systemXHR": { "description": "Required to make Ajax Calls over the Network" }
+    }
+}
