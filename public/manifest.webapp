@@ -11,8 +11,9 @@
         "url": ""
     },
     "default_locale": "en-US",
-	"type": "privileged",
+	"type": "web",
     "permissions": {
         "systemXHR": { "description": "Required to make Ajax Calls over the Network" }
-    }
+    },
+    "fullscreen": "true"
 }
