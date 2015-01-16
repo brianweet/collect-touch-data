@@ -4,6 +4,7 @@
 
 var KeyboardAppStarter = function() {
   this._started = false;
+  this.touchTrack = null;
 };
 
 // Since the app scripts are dynamic injected, Ctrl+F5 will not clean it up.
@@ -68,6 +69,12 @@ KeyboardAppStarter.prototype._startAPI = function() {
       weakMapPrototypeSet.call(this, key, val);
     };
   }
+
+  //should not be using window.app
+  if(window.app){
+    this.touchTrack = new TouchTrack(window.app);
+    this.touchTrack.start();
+  }
 };
 
 KeyboardAppStarter.prototype.handleEvent = function(evt) {
@@ -84,7 +91,7 @@ KeyboardAppStarter.prototype.handleEvent = function(evt) {
       break;
     case 'tt_test':
       //debugger;
-      console.log('message in KeyboardAppStarter eventhandler');
+      console.log(['message in KeyboardAppStarter eventhandler',evt]);
       break;
   }
 };

@@ -80,6 +80,11 @@ InputMethodHandler.prototype.handleInputContextMessage = function(data) {
         result: ''
       });
 
+      this.app.postMessage({
+        api: 'api',
+        method: 'tt_test'
+      });
+
       break;
 
     case 'replaceSurroundingText':

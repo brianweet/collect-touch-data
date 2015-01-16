@@ -70,9 +70,6 @@ KeyboardDemoApp.prototype.start = function() {
   this.layouts = new KeyboardLayouts(this);
   this.layouts.start();
 
-  this.touchTrack = new TouchTrack(this);
-  this.touchTrack.start();
-
   window.addEventListener('message', this);
   window.addEventListener('hashchange', this);
 
@@ -151,10 +148,6 @@ KeyboardDemoApp.prototype.handleEvent = function(evt) {
     case 'message':
       this.handleMessage(evt.data);
 
-      this.postMessage({
-        api: 'api',
-        method: 'tt_test'
-      });
       break;
 
     case 'mousedown':
