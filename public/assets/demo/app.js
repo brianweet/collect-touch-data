@@ -52,7 +52,7 @@ var KeyboardDemoApp = function() {
 };
 
 KeyboardDemoApp.prototype.INPUTAREA_ELEMENT_ID = 'inputarea';
-KeyboardDemoApp.prototype.GAIA_APP_DIR = '/gaia/apps/keyboard';
+KeyboardDemoApp.prototype.GAIA_APP_DIR = './gaia/apps/keyboard';
 KeyboardDemoApp.prototype.CONTAINER_ID = 'keyboard-app-container';
 
 KeyboardDemoApp.prototype.start = function() {
@@ -78,7 +78,7 @@ KeyboardDemoApp.prototype.start = function() {
 
   var hash = this.layouts.currentLayout;
   this.container.src =
-    '/app.html#' + this.GAIA_APP_DIR + '/index.html#' + hash;
+    'app.html#' + this.GAIA_APP_DIR + '/index.html#' + hash;
 
   this.focused = true;
 };
