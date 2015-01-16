@@ -70,6 +70,9 @@ KeyboardDemoApp.prototype.start = function() {
   this.layouts = new KeyboardLayouts(this);
   this.layouts.start();
 
+  this.touchTrack = new TouchTrack(this);
+  this.touchTrack.start();
+
   window.addEventListener('message', this);
   window.addEventListener('hashchange', this);
 
@@ -81,12 +84,6 @@ KeyboardDemoApp.prototype.start = function() {
     'app.html#' + this.GAIA_APP_DIR + '/index.html#' + hash;
 
   this.focused = true;
-
-  var mobileNav = document.getElementById('mobile-nav');
-  mobileNav.selectedIndex = 0;
-  mobileNav.addEventListener('change', function(evt) {
-    window.location.href = mobileNav.value;
-  });
 };
 
 KeyboardDemoApp.prototype.getFocus = function() {
@@ -196,6 +193,10 @@ KeyboardDemoApp.prototype.handleMessage = function(data) {
       break;
   }
 };
+
+KeyboardDemoApp.prototype.getContainer = function() {
+  return this.container;
+}
 
 exports.KeyboardDemoApp = KeyboardDemoApp;
 
