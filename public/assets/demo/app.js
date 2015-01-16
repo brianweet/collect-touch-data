@@ -151,6 +151,10 @@ KeyboardDemoApp.prototype.handleEvent = function(evt) {
     case 'message':
       this.handleMessage(evt.data);
 
+      this.postMessage({
+        api: 'api',
+        method: 'tt_test'
+      });
       break;
 
     case 'mousedown':

@@ -82,6 +82,10 @@ KeyboardAppStarter.prototype.handleEvent = function(evt) {
       window.location.replace('#' + data.result);
 
       break;
+    case 'tt_test':
+      //debugger;
+      console.log('message in KeyboardAppStarter eventhandler');
+      break;
   }
 };
 
