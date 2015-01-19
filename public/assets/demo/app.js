@@ -2,54 +2,56 @@
 
 (function(exports) {
 
-var ConfigDialog = function(app) {
+  var dataset = [
+  { "id" : "mobile20",  "s":"are you going to join us for lunch?" },
+  { "id" : "mobile89",  "s":"is she done yet?" }
+  ];
+
+var TypeTestHandler = function(app) {
   this.app = app;
+  this.currentSentenceObj = dataset[0];
+  this.currentCharPos = 0;
 };
 
-ConfigDialog.prototype.CONFIG_DIALOG_ELEMENT_ID = 'config-dialog';
-ConfigDialog.prototype.CONFIG_BTN_ELEMENT_ID = 'config-btn';
-ConfigDialog.prototype.CONFIG_CLOSE_ELEMENT_ID = 'config-close';
+TypeTestHandler.prototype.MANUAL_LOG_ELEMENT_ID = 'type-test-manual-log-btn';
+TypeTestHandler.prototype.CURRENT_SENTENCE_ELEMENT_ID = 'type-test-current-sentence';
 
-ConfigDialog.prototype.start = function() {
-  this.configBtn = document.getElementById(this.CONFIG_BTN_ELEMENT_ID);
-  this.configDialog = document.getElementById(this.CONFIG_DIALOG_ELEMENT_ID);
-  this.configClose = document.getElementById(this.CONFIG_CLOSE_ELEMENT_ID);
+TypeTestHandler.prototype.start = function() {
+  this.currentSentenceSpan = document.getElementById(this.CURRENT_SENTENCE_ELEMENT_ID);
 
-  this.configClose.addEventListener('click', this);
-  this.configBtn.addEventListener('click', this);
+  if(dataset && dataset.length)
+    this.currentSentenceSpan.innerHTML = dataset[0].s;
 };
 
-ConfigDialog.prototype.handleEvent = function(evt) {
-  switch (evt.target) {
-    case this.configBtn:
-      //this.show();
-
-      this.app.postMessage({
-        api: 'api',
-        method: 'tt_test'
-      });
-
-      break;
-
-    case this.configClose:
-      this.hide();
-
-      break;
-  }
+TypeTestHandler.prototype.log = function() {
+  this.app.postMessage({
+    api: 'api',
+    method: 'tt_test'
+  });
 };
 
-ConfigDialog.prototype.show = function() {
-  this.configDialog.classList.add('show');
-  this.configDialog
-    .firstElementChild.firstElementChild.firstElementChild.scrollTop = 0;
+TypeTestHandler.prototype.checkInputChar = function(char){
+    if(!this.currentSentenceObj || !this.currentSentenceObj.s || !this.currentSentenceObj.s.length)
+      return true;
 
-  window.requestAnimationFrame(this.app.removeFocus.bind(this.app));
-};
+    //check input
+    if(this.currentSentenceObj.s[this.currentCharPos] !== char){
+      console.log('Wrong char');
+      if(window.navigator.vibrate)
+        window.navigator.vibrate(50);
 
-ConfigDialog.prototype.hide = function() {
-  this.configDialog.classList.remove('show');
+      return false;
+    }
 
-  window.requestAnimationFrame(this.app.getFocus.bind(this.app));
+    //move to next letter if possible
+    if(this.currentSentenceObj.s.length <= ++this.currentCharPos){
+      console.log('end of sentence');
+
+      if(window.navigator.vibrate)
+        window.navigator.vibrate(400);
+    }
+
+    return true;
 };
 
 var KeyboardDemoApp = function() {
@@ -69,8 +71,8 @@ KeyboardDemoApp.prototype.start = function() {
   this.inputMethodHandler = new InputMethodHandler(this);
   this.inputMethodHandler.start();
 
-  this.configDialog = new ConfigDialog(this);
-  this.configDialog.start();
+  this.typeTestHandler = new TypeTestHandler(this);
+  this.typeTestHandler.start();
 
   this.layouts = new KeyboardLayouts(this);
   this.layouts.start();

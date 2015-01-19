@@ -22,6 +22,7 @@ var KeyboardApp = function() {
   this.upperCaseStateManager = null;
   this.layoutRenderingManager = null;
   this.stateManager = null;
+  this.touchTrack = null;
 
   this.inputContext = null;
 };
@@ -92,6 +93,9 @@ KeyboardApp.prototype._startComponents = function() {
   this.stateManager = new StateManager(this);
   this.stateManager.start();
 
+  this.touchTrack = new TouchTrack(this);
+  this.touchTrack.start();
+
   this.console.timeEnd('KeyboardApp._startComponents()');
 };
 
@@ -137,6 +141,9 @@ KeyboardApp.prototype._stopComponents = function() {
 
   this.stateManager.stop();
   this.stateManager = null;
+
+  this.touchTrack.stop();
+  this.touchTrack = null;
 };
 
 KeyboardApp.prototype.getContainer = function() {

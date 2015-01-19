@@ -2,80 +2,6 @@
 
 (function(exports) {
 
-var LayoutSelectionDialog = function(app) {
-  this.app = app;
-};
-
-LayoutSelectionDialog.prototype.LAYOUT_SELECTION_DIALOG =
-  'layout-selection-dialog';
-LayoutSelectionDialog.prototype.LAYOUT_SELECTION_CANCEL =
-  'layout-selection-cancel';
-LayoutSelectionDialog.prototype.LAYOUT_SELECTION_CONFIG =
-  'layout-selection-config';
-LayoutSelectionDialog.prototype.LAYOUT_SELECTION_LIST =
-  'layout-selection-list';
-
-LayoutSelectionDialog.prototype.start = function() {
-  this.layoutSelectionDialog =
-    document.getElementById(this.LAYOUT_SELECTION_DIALOG);
-  this.layoutSelectionCancel =
-    document.getElementById(this.LAYOUT_SELECTION_CANCEL);
-  this.layoutSelectionConfig =
-    document.getElementById(this.LAYOUT_SELECTION_CONFIG);
-  this.layoutSelectionList =
-    document.getElementById(this.LAYOUT_SELECTION_LIST);
-
-  this.layoutSelectionCancel.addEventListener('click', this);
-  this.layoutSelectionConfig.addEventListener('click', this);
-  this.layoutSelectionList.addEventListener('click', this);
-};
-
-LayoutSelectionDialog.prototype.handleEvent = function(evt) {
-  this.hide();
-
-  switch (evt.target) {
-    case this.layoutSelectionConfig:
-      this.app.configDialog.show();
-
-      break;
-  }
-};
-
-LayoutSelectionDialog.prototype.show = function(list, currentLayout) {
-  this._updateList(list, currentLayout);
-  this.layoutSelectionDialog.classList.add('show');
-  this.layoutSelectionDialog
-    .firstElementChild.firstElementChild.firstElementChild.scrollTop = 0;
-};
-
-LayoutSelectionDialog.prototype.hide = function() {
-  this.layoutSelectionDialog.classList.remove('show');
-};
-
-LayoutSelectionDialog.prototype._updateList = function(list, currentLayout) {
-  var template = (function() {
-    var a = document.createElement('a');
-    a.className = 'list-group-item';
-    a.dir = 'auto';
-
-    return a;
-  })();
-
-  this.layoutSelectionList.textContent = '';
-
-  list.forEach(function(label, id) {
-    var node = template.cloneNode(true);
-    node.href = '#' + id;
-    node.textContent = label;
-
-    if (id === currentLayout) {
-      node.classList.add('active');
-    }
-
-    this.layoutSelectionList.appendChild(node);
-  }, this);
-};
-
 var KeyboardLayouts = function(app) {
   this.app = app;
 
@@ -83,78 +9,17 @@ var KeyboardLayouts = function(app) {
     to show case the diversity of the feature the keyboard app
     and IMEngine provided. */
   this.enabledLayouts =
-    ['en'];
+    ['en-Custom'];
 
   this.currentLayout = undefined;
 
   var layouts = this.layouts = new Map();
-  layouts.set('ar', 'العربية');
-  layouts.set('bg-BDS', 'Български (БДС)');
-  layouts.set('bg-Pho-Ban', 'Български (БАН)');
-  layouts.set('bg-Pho-Trad', 'Български (Фонетична)');
-  layouts.set('bn-Avro', 'বাংলা - অভ্র');
-  layouts.set('bn-Probhat', 'বাংলা - প্রভাত');
-  layouts.set('bs', 'Bosanski');
-  layouts.set('ca', 'Català');
-  layouts.set('cs', 'Česká');
-  layouts.set('cs-qwerty', 'Česká (QWERTY)');
-  layouts.set('da', 'Dansk');
-  layouts.set('de', 'Deutsch');
-  layouts.set('dz-BT', 'རྫོང་ཁ');
-  layouts.set('el', 'Ελληνικό');
-  layouts.set('en-Colemak', 'Colemak');
-  layouts.set('en-Dvorak', 'Dvorak');
-  layouts.set('en-Neo', 'Neo');
-  layouts.set('en', 'English');
-  layouts.set('eo', 'Esperanto');
-  layouts.set('es-Americas', 'Español (Latinoamérica)');
-  layouts.set('es', 'Español');
-  layouts.set('eu', 'Euskara');
-  layouts.set('ff', 'Pulaar-Fulfulde');
-  layouts.set('fr-Dvorak-bepo', 'Bépo');
-  layouts.set('fr', 'Français');
-  layouts.set('fr-CA', 'Français (Canadien)');
-  layouts.set('ga', 'Gaeilge');
-  layouts.set('gd', 'Gàidhlig');
-  layouts.set('gl', 'Galego');
-  layouts.set('gv', 'Gaelg');
-  layouts.set('he', 'עִבְרִית');
-  layouts.set('hi', 'हिन्दी');
-  layouts.set('hr', 'Hrvatski');
-  layouts.set('hu', 'Magyar');
-  layouts.set('it', 'Italiano');
-  layouts.set('jp-kanji', 'Japanese - Kanji');
-  layouts.set('ko', '한국어');
-  layouts.set('lt', 'Lietuvių');
-  layouts.set('lv', 'Latviešu');
-  layouts.set('mk', 'Македонски');
-  layouts.set('my', '\u1019\u103C\u1014\u103A\u1019\u102C'); /*မြန်မာ*/
-  layouts.set('nb', 'Norsk');
-  layouts.set('nl', 'Nederlands');
-  layouts.set('pl', 'Polski');
-  layouts.set('pt-PT', 'Português (Europeu)');
-  layouts.set('pt-BR', 'Português');
-  layouts.set('ro', 'Română');
-  layouts.set('ru', 'Pусский');
-  layouts.set('sk', 'Slovenčina');
-  layouts.set('sq', 'Shqip');
-  layouts.set('sr-Cyrl', 'Српски');
-  layouts.set('sr-Latn', 'Srpski');
-  layouts.set('sv', 'Svenska');
-  layouts.set('ta', 'தமிழ்');
-  layouts.set('tr-F', 'Türkçe F');
-  layouts.set('tr-Q', 'Türkçe Q');
-  layouts.set('vi-Qwerty', 'Tiếng Việt (QWERTY)');
-  layouts.set('vi-Telex', 'Tiếng Việt (Telex)');
-  layouts.set('vi-Typewriter', 'Tiếng Việt');
-  layouts.set('zh-Hans-Handwriting', '手写简体');
-  layouts.set('zh-Hans-Pinyin', '拼音');
-  layouts.set('zh-Hant-Zhuyin', '注音');
+  layouts.set('en-Custom', 'English - Custom');
 };
 
 KeyboardLayouts.prototype.SETTINGS_MENU_ELEMENT_ID = 'settings-menu';
 
-KeyboardLayouts.prototype.DEFAULT_LAYOUT = 'en';
+KeyboardLayouts.prototype.DEFAULT_LAYOUT = 'en-Custom';
 
 KeyboardLayouts.prototype.start = function() {
   var hash = window.location.hash.substr(1);
@@ -168,16 +33,13 @@ KeyboardLayouts.prototype.start = function() {
   this.settingsMenu.addEventListener('click', this);
 
   this._populateSettingsMenu();
-
-  this.selectionDialog = new LayoutSelectionDialog(this.app);
-  this.selectionDialog.start();
 };
 
 KeyboardLayouts.prototype.handleEvent = function(evt) {
   if (!('layoutId' in evt.target.dataset)) {
     return;
   }
-
+  
   var key = evt.target.dataset.layoutId;
   var value = evt.target.checked;
 
@@ -220,6 +82,7 @@ KeyboardLayouts.prototype.updateCurrentLayout = function(id) {
 };
 
 KeyboardLayouts.prototype.switchToNext = function() {
+  return;
   var index = this.enabledLayouts.indexOf(this.currentLayout);
   if (index === -1) {
     index = 0;
@@ -234,15 +97,6 @@ KeyboardLayouts.prototype.switchToNext = function() {
   this.currentLayout = this.enabledLayouts[index];
 
   window.location.hash = '#' + this.currentLayout;
-};
-
-KeyboardLayouts.prototype.showSelectionDialog = function() {
-  var enabledLayoutsMap = new Map();
-  this.enabledLayouts.forEach(function(id) {
-    enabledLayoutsMap.set(id, this.layouts.get(id));
-  }, this);
-
-  this.selectionDialog.show(enabledLayoutsMap, this.currentLayout);
 };
 
 KeyboardLayouts.prototype._populateSettingsMenu = function() {

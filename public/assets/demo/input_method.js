@@ -183,6 +183,12 @@ InputMethodHandler.prototype._handleInput = function(job, str, offset, length) {
       break;
 
     case 'append':
+      if(!this.app.typeTestHandler.checkInputChar(str)){
+        //Not the char we want
+        break;
+      }
+      
+
       this._currentText += str;
 
       window.requestAnimationFrame(function() {

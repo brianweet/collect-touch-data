@@ -293,7 +293,7 @@
    *
    */
   var InputMethodManager = function MozInputMethodManager() {
-    this._supportsSwitching = true;
+    this._supportsSwitching = false;
   };
 
   InputMethodManager.prototype.start = function() {
