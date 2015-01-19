@@ -22,7 +22,12 @@ ConfigDialog.prototype.start = function() {
 ConfigDialog.prototype.handleEvent = function(evt) {
   switch (evt.target) {
     case this.configBtn:
-      this.show();
+      //this.show();
+
+      this.app.postMessage({
+        api: 'api',
+        method: 'tt_test'
+      });
 
       break;
 
