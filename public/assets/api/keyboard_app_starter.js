@@ -95,22 +95,6 @@ KeyboardAppStarter.prototype.handleEvent = function(evt) {
       window.location.replace('#' + data.result);
 
       break;
-    case 'tt_test':
-      //debugger;
-      console.log(['message in KeyboardAppStarter eventhandler']);
-      
-      //if(this.touchTrack){
-      //  var touches = this.touchTrack.getTrackedTouches();
-      //    this.touchTrack.clear();
-      //
-      //  if(touches.length)
-      //    for(var i = 0; i < touches.length; i++)
-      //      console.log(touches[i]);
-      //
-      //  console.log(['wrote log to console']);
-      //}
-
-      break;
   }
 };
 

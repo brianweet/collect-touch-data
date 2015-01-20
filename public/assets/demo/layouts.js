@@ -82,7 +82,6 @@ KeyboardLayouts.prototype.updateCurrentLayout = function(id) {
 };
 
 KeyboardLayouts.prototype.switchToNext = function() {
-  return;
   var index = this.enabledLayouts.indexOf(this.currentLayout);
   if (index === -1) {
     index = 0;

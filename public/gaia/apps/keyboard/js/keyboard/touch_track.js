@@ -6,6 +6,7 @@
 
   var TouchTrack = function(app) {
     this._started = false;
+    this._isTracking = false;
     this.app = app;
     trackedTouches = new Array;
     
@@ -24,7 +25,6 @@
       throw new Error('TouchTrack: ' +
         'Instance should not be start()\'ed twice.');
     }
-    this._started = true;
 
     this._container = this.app.getContainer();
 
@@ -32,8 +32,12 @@
     this._container.addEventListener('touchmove', this);
     this._container.addEventListener('touchend', this);
     this._container.addEventListener('touchcancel', this);
+    this._container.addEventListener('mousedown', this);
+    this._container.addEventListener('mouseup', this);
 
     window.addEventListener('message', this);
+
+    this._started = this._isTracking = true;
   }
 
   TouchTrack.prototype.stop = function(){
@@ -48,6 +52,8 @@
     this._container.removeEventListener('touchmove', this);
     this._container.removeEventListener('touchend', this);
     this._container.removeEventListener('touchcancel', this);
+    this._container.removeEventListener('mousedown', this);
+    this._container.removeEventListener('mouseup', this);
 
     window.removeEventListener('message', this);
   }
@@ -56,52 +62,82 @@
     switch (evt.type) {
       case 'message':
         var data = evt.data;
-        if (data && data.api && data.api === 'api' && data.method === 'tt_test') {
+        if (!data || !data.api || data.api !== 'touchTrack')
+          break;
 
-          //TODO: post touches to api?
-
-          //for now write to console
-          console.log(['TouchTrack: writing log to console']);
-          if(trackedTouches.length)
-            for(var i = 0; i < trackedTouches.length; i++)
-              console.log(trackedTouches[i]);
-          console.log(['TouchTrack: wrote log to console']);
-          this.clear();
+        switch(data.method){
+          case 'startTracking':
+            this._isTracking = true;
+            break;
+          case 'stopTracking':
+            this._isTracking = false;
+            break;
+          case 'getLogAndStop':
+            this._isTracking = false;
+            evt.source.postMessage({
+              api: data.api,
+              logData: trackedTouches
+            }, evt.origin);
+            break;
         }
+        
+//        if (data && data.api && data.api === 'api' && data.method === 'tt_test') {
+//          //TODO: post touches to api?
+//
+//          //for now write to console
+//          console.log(['TouchTrack: writing log to console']);
+//          if(trackedTouches.length)
+//            for(var i = 0; i < trackedTouches.length; i++)
+//              console.log(trackedTouches[i]);
+//          console.log(['TouchTrack: wrote log to console']);
+//          this.clear();
+//        }
         break;
       case 'touchstart':
       case 'touchmove':
       case 'touchend':
       case 'touchcancel':
+      case 'mousedown':
+      case 'mouseup':
+        if(!this._isTracking)
+          return;
+
         var eventTime = Date.now();
         if(trackedTouches.length === 0){
           startTime = eventTime;
         }
         var time = eventTime - startTime;
-    
-        for (var i = 0; i < evt.changedTouches.length; i++) {
-          var log = evt.type
+
+
+
+        if(evt instanceof MouseEvent){
+          this.add(evt, time);
+        }else{
+          for (var i = 0; i < evt.changedTouches.length; i++) {
+          this.add(evt.changedTouches[i], time);
+          }
+        }
+        break;
+    }
+  };
+
+  TouchTrack.prototype.add = function(evt, time) {
+    var log = evt.type
             //TODO: check if we actually need to get the value
-            + ';' + Object.getPrototypeOf(this.app.layoutRenderingManager.getTargetObject(evt.changedTouches[i].target)).value
-            + ';' + evt.changedTouches[i].screenX
-            + ';' + evt.changedTouches[i].screenY 
+            + ';' + Object.getPrototypeOf(this.app.layoutRenderingManager.getTargetObject(evt.target)).value
+            + ';' + evt.screenX
+            + ';' + evt.screenY 
             + ';' + time
             //TODO: remove code related to the offset
-            + ';' + evt.changedTouches[i].target.offsetHeight 
-            + ';' + evt.changedTouches[i].target.offsetWidth 
-            + ';' + evt.changedTouches[i].target.offsetTop
-            + ';' + evt.changedTouches[i].target.offsetLeft
-            + ';' + evt.changedTouches[i].target.offsetParent.offsetHeight 
-            + ';' + evt.changedTouches[i].target.offsetParent.offsetWidth 
-            + ';' + evt.changedTouches[i].target.offsetParent.offsetTop
-            + ';' + evt.changedTouches[i].target.offsetParent.offsetLeft;
-          console.info(log);
+            + ';' + evt.target.offsetHeight 
+            + ';' + evt.target.offsetWidth 
+            + ';' + evt.target.offsetTop
+            + ';' + evt.target.offsetLeft
+            + ';' + evt.target.offsetParent.offsetHeight 
+            + ';' + evt.target.offsetParent.offsetWidth 
+            + ';' + evt.target.offsetParent.offsetTop
+            + ';' + evt.target.offsetParent.offsetLeft;
           trackedTouches.push(log);
-        }
-        //trackedTouches.push({"t" : time,"e" : evt});
-    }
-
-    
   };
 
   exports.TouchTrack = TouchTrack;
