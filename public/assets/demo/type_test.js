@@ -15,15 +15,17 @@ var TypeTestHandler = function(app) {
   this.currentCharPos = 0;
 };
 
-TypeTestHandler.prototype.MANUAL_LOG_ELEMENT_ID = 'type-test-manual-log-btn';
+TypeTestHandler.prototype.STATUS_ELEMENT_ID = 'type-test-status';
+TypeTestHandler.prototype.LAST_RESULT_ELEMENT_ID = 'type-test-last-result';
 TypeTestHandler.prototype.CURRENT_SENTENCE_ELEMENT_ID = 'type-test-current-sentence';
 
 TypeTestHandler.prototype.start = function() {
   this.currentSentenceSpan = document.getElementById(this.CURRENT_SENTENCE_ELEMENT_ID);
+  this.statusSpan = document.getElementById(this.STATUS_ELEMENT_ID);
+  this.lastResultSpan = document.getElementById(this.LAST_RESULT_ELEMENT_ID);
 
   if(dataset && dataset.length){
-    this.currentSentenceObj = dataset[0];
-    this.currentSentenceSpan.innerHTML = this.currentSentenceObj.s;
+    this._setNewSentence(dataset[0]);
   }
 
   this._started = true;
@@ -34,11 +36,32 @@ TypeTestHandler.prototype.processLog = function(logMessage) {
   if(data.length)
     for(var i = 0; i < data.length; i++)
       console.log(data[i]);
-  //debugger;
+
+    this.statusSpan.innerHTML = "Well done, lets find you a new sentence!";
+    this.lastResultSpan.innerHTML = "Your result is 999 correct characters per minute";
+
+    setTimeout(function(){
+      var idx = dataset.indexOf(this.currentSentenceObj);
+      if(dataset.length <= ++idx)
+        this.statusSpan.innerHTML = "You are done woohooo!";
+      else
+        this._setNewSentence(dataset[idx]);
+    }.bind(this),200);
 }
 
-TypeTestHandler.prototype._sentenceDone = function(first_argument) {
+TypeTestHandler.prototype._sentenceDone = function() {
   return this.currentSentenceObj.s.length <= this.currentCharPos;
+};
+
+TypeTestHandler.prototype._setNewSentence = function(newSentenceObj) {
+  //TODO: create sentence object
+  if(typeof newSentenceObj === "string")
+    throw new Error('Expect sentence object');
+
+  this.currentSentenceObj = newSentenceObj;
+  this.currentSentenceSpan.innerHTML = newSentenceObj.s;
+  this.currentCharPos = 0;
+  this.statusSpan.innerHTML = "You can start typing!";
 };
 
 TypeTestHandler.prototype._endCurrentSentence = function() {
@@ -52,6 +75,8 @@ TypeTestHandler.prototype._endCurrentSentence = function() {
     api: 'touchTrack',
     method: 'getLogAndStop'
   });
+
+  this.statusSpan.innerHTML = "Waiting for score";
 };
 
 TypeTestHandler.prototype.checkInputChar = function(char){
@@ -60,6 +85,9 @@ TypeTestHandler.prototype.checkInputChar = function(char){
 
     if(!this.currentSentenceObj || !this.currentSentenceObj.s || !this.currentSentenceObj.s.length)
       throw new Error('TypeTest: Can\'t check input if we don\'t have a an active sentence.');
+    
+    if(this.currentCharPos === 0)
+      this.statusSpan.innerHTML = "Go go go!";
 
     var sentence = this.currentSentenceObj.s;
     var spanEl = this.currentSentenceSpan;

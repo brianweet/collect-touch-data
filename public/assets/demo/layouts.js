@@ -30,9 +30,11 @@ KeyboardLayouts.prototype.start = function() {
   }
 
   this.settingsMenu = document.getElementById(this.SETTINGS_MENU_ELEMENT_ID);
-  this.settingsMenu.addEventListener('click', this);
-
-  this._populateSettingsMenu();
+  if(this.settingsMenu){
+    this.settingsMenu.addEventListener('click', this);
+  
+    this._populateSettingsMenu();
+  }
 };
 
 KeyboardLayouts.prototype.handleEvent = function(evt) {
