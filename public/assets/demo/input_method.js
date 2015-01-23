@@ -183,6 +183,7 @@ InputMethodHandler.prototype._handleInput = function(job, str, offset, length) {
       break;
 
     case 'append':
+    //TODO BwE
       if(!this.app.typeTestHandler.checkInputChar(str)){
         //Not the char we want or we're done with the current sentence
         //so don't add it to the input

@@ -24,6 +24,7 @@ KeyboardAppStarter.prototype.start = function() {
 
   this._startAPI();
   this._replaceAppendChild();
+
 };
 
 KeyboardAppStarter.prototype._startAPI = function() {
@@ -36,7 +37,7 @@ KeyboardAppStarter.prototype._startAPI = function() {
   window.resizeTo = function(width, height) {
     window.parent.postMessage({
       api: 'resizeTo',
-      args: [width, height]
+      args: [width, height, IMERender.getKeyArray()]
     } , '*');
   };
 

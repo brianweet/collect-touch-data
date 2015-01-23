@@ -2,6 +2,7 @@
 
 (function(exports) {
 
+
 var KeyboardDemoApp = function() {
   this.container = null;
 };
@@ -20,7 +21,6 @@ KeyboardDemoApp.prototype.start = function() {
   this.inputMethodHandler.start();
 
   this.typeTestHandler = new TypeTestHandler(this);
-  this.typeTestHandler.start();
 
   this.layouts = new KeyboardLayouts(this);
   this.layouts.start();
@@ -137,6 +137,13 @@ KeyboardDemoApp.prototype.handleMessage = function(data) {
 
         this.inputMethodHandler.composition.scrollIntoView();
       }.bind(this));
+
+      if(!this.typeTestHandler._starting){
+        this.typeTestHandler.start(data.args[2]);
+      } else {
+        //TODO do something with new size (if it actually changed)
+        //this.typeTestHandler.handleNewSize(data.args[2]);
+      }
 
       break;
 

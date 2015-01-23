@@ -1,24 +1,21 @@
-/*var http = require('http')
-var port = process.env.PORT || 1337;
-http.createServer(function(req, res) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World\n');
-}).listen(port);*/
+var express = require('express');
+var bodyParser = require("body-parser");
+var app = express();
+app.use(bodyParser.json());
 
-var finalhandler = require('finalhandler')
-var http = require('http')
-var serveStatic = require('serve-static')
+app.use(express.static(__dirname + '/public'));
 
-var port = process.env.PORT || 1337;
+app.post('/api/register', function(req, res, next) {
+	var newSessionId = Math.random().toString(32).substr(2, 8);
+	console.log(req.body);
+	console.log('newSessionId', newSessionId);
+	res.send(newSessionId);
+});
 
-// Serve up public folder
-var serve = serveStatic('public', {'index': ['index.html']})
+app.post('/api/sentence/:sessionid', function(req, res, next) {
+	console.log('sessionid', req.params.name);
+	console.log(req.body);
+	res.send('OK');
+});
 
-// Create server
-var server = http.createServer(function(req, res){
-  var done = finalhandler(req, res)
-  serve(req, res, done)
-})
-
-// Listen
-server.listen(port)
+app.listen(process.env.PORT || 1337);
