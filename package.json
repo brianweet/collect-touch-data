@@ -21,6 +21,7 @@
     "body-parser": "^1.10.2",
     "express": "^4.11.1",
     "finalhandler": "^0.3.3",
+    "nstore": "^0.5.2",
     "serve-static": "^1.8.0"
   }
 }

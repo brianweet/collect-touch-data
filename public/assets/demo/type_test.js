@@ -83,7 +83,7 @@ TypeTestHandler.prototype.sendToServer = function(obj) {
   //send data to server
   var jsonString = JSON.stringify(obj);
   var xhr = new window.XMLHttpRequest({mozSystem: true});
-  xhr.open("post", "/api/sentence/", true);
+  xhr.open("post", "/api/sentence/" + this._typeTestSessionId, true);
   xhr.setRequestHeader("Content-type", "application/json;charset=UTF-8");
   xhr.setRequestHeader("Content-length", jsonString.length);
   xhr.addEventListener("load", transferDone, false);
@@ -137,7 +137,7 @@ TypeTestHandler.prototype._setNewSentence = function(newSentenceObj) {
 
   var resultId = Math.random().toString(32).substr(2, 8);
   results[resultId] = { id: Math.random().toString(32).substr(2, 8), 
-                        sentence: this.newSentenceObj, 
+                        sentence: newSentenceObj, 
                         wrongCharCount: 0,
                         data:'', 
                         done: false, 
