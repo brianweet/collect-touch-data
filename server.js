@@ -25,8 +25,8 @@ var db = nstore.new('sessions.db', function(err) {
 
 //register new session
 app.post('/api/register', function(req, res, next) {
-	if (!req.body || !req.body.length) {
-    	return next('Need keyboard key info in body');
+	if (!req.body || !req.body.resizeArgs || !req.body.screenDimensions) {
+    	return next('Need keyboard size info in body');
   	}
 
   	//random?
@@ -34,7 +34,8 @@ app.post('/api/register', function(req, res, next) {
 
 	var session = {
 		version: 1,
-		keyboardKeys: req.body,
+		resizeArgs: req.body.resizeArgs,
+		screenDimensions: req.body.screenDimensions,
 		sentences: []
 	};
 	db.save(newSessionId, session, function(err) {

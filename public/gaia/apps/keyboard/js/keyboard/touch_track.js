@@ -12,6 +12,7 @@
     
     this.clear = function(){
       trackedTouches.length = 0;
+      startTime = 0;
     }
 
     this.getTrackedTouches = function(){
@@ -32,9 +33,9 @@
     this._container.addEventListener('touchmove', this);
     this._container.addEventListener('touchend', this);
     this._container.addEventListener('touchcancel', this);
-    this._container.addEventListener('mousedown', this);
-    this._container.addEventListener('mousemove', this);
-    this._container.addEventListener('mouseup', this);
+    //this._container.addEventListener('mousedown', this);
+    //this._container.addEventListener('mousemove', this);
+    //this._container.addEventListener('mouseup', this);
 
     window.addEventListener('message', this);
 
@@ -53,9 +54,9 @@
     this._container.removeEventListener('touchmove', this);
     this._container.removeEventListener('touchend', this);
     this._container.removeEventListener('touchcancel', this);
-    this._container.removeEventListener('mousedown', this);
-    this._container.removeEventListener('mousemove', this);
-    this._container.removeEventListener('mouseup', this);
+    //this._container.removeEventListener('mousedown', this);
+    //this._container.removeEventListener('mousemove', this);
+    //this._container.removeEventListener('mouseup', this);
 
     window.removeEventListener('message', this);
   }
@@ -73,16 +74,18 @@
             console.log('TouchTrack: startTracking');
             this._isTracking = true;
             break;
-          case 'stopTracking':
+          case '':
+            console.log('TouchTrack: stopTracking')
             this._isTracking = false;
             break;
-          case 'getLogAndStop':
-            this._isTracking = false;
+          case 'getLogAndClear':
+            console.log('TouchTrack: getLogAndClear');
             evt.source.postMessage({
               api: data.api,
               logData: trackedTouches,
               data: { id: data.id } 
             }, evt.origin);
+            this.clear();
             break;
         }
         break;
@@ -90,7 +93,7 @@
       case 'touchmove':
       case 'touchend':
       case 'touchcancel':
-      case 'mousedown':
+      //case 'mousedown':
         if(!this._isTracking)
           return;
 

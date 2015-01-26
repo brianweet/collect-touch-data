@@ -44,7 +44,52 @@
     <hr/>
     <p>
       <span id="type-test-status"></span><br/>
-      <span id="type-test-last-result"></span>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>Last Sentence</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td scope="row">
+              <span id="correct-cpm" class="label label-success">0</span>
+              |
+              <span id="wrong-cpm" class="label label-danger">0</span>
+              CPM
+            </td>
+            <td>
+              <span id="correct-cpm-total" class="label label-success">0</span>
+              |
+              <span id="wrong-cpm-total" class="label label-danger">0</span>
+              CPM
+            </td>
+          </tr>
+          <tr>
+            <td scope="row">
+              <span id="correct-char" class="label label-success">0</span>
+              |
+              <span id="wrong-char" class="label label-danger">0</span>
+              char.
+            </td>
+            <td>
+              <span id="correct-char-total" class="label label-success">0</span>
+              |
+              <span id="wrong-char-total" class="label label-danger">0</span>
+              char.
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">
+              CPM = characters per minute
+            </td>
+            <th>
+              char. = total amount of characters
+            </th>
+          </tr>
+        </tbody>
+      </table>
     </p>
     <div id="inputarea" dir="auto" class="focused well well-sm" style="display:none;">
       <span id="inputtext"></span><span id="composition"></span>

@@ -23,7 +23,7 @@ SettingsHandler.prototype.start = function() {
 
   this.settings.set('keyboard.clicksound', !!canPlayWav && hasWebAudio);
 
-  window.addEventListener('click', this);
+  //window.addEventListener('click', this);
 
   if (!canPlayWav || !hasWebAudio) {
     var el = document.querySelector('[data-setting-id="keyboard.clicksound"]');

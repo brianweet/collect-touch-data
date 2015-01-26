@@ -139,7 +139,10 @@ KeyboardDemoApp.prototype.handleMessage = function(data) {
       }.bind(this));
 
       if(!this.typeTestHandler._starting){
-        this.typeTestHandler.start(data.args[2]);
+        this.typeTestHandler
+          .start({ width:data.args[0],height:data.args[1],keys:data.args[2] }, 
+                  { width: window.innerWidth || document.body.clientWidth, 
+                    height: window.innerHeight || document.body.clientHeight });
       } else {
         //TODO do something with new size (if it actually changed)
         //this.typeTestHandler.handleNewSize(data.args[2]);
@@ -148,6 +151,7 @@ KeyboardDemoApp.prototype.handleMessage = function(data) {
       break;
 
     case 'touchTrack':
+      console.log('KeyboardDemoApp: handle touchTrack event');
       this.typeTestHandler.processLog(data);
       break;
     default:

@@ -301,7 +301,6 @@
   };
 
   InputMethodManager.prototype.handleEvent = function(evt) {
-    //console.log(evt);
     var data = evt.data;
 
     if (data.api !== 'inputmethodmanager') {
