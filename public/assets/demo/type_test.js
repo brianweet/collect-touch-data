@@ -241,16 +241,15 @@ TypeTestHandler.prototype._endCurrentSentence = function() {
   });
 
   //reset keyboard context info
-//   setTimeout(function(){
-// this.app.inputMethodHandler._text = this.app.inputMethodHandler._currentText = '';
-//   document.getElementById('inputtext').innerHTML = '';
-//   this.app.postMessage({
-//     api: 'inputcontext',
-//     method: 'updateSelectionContext',
-//     result: {selectionInfo:{selectionStart:0,selectionEnd:0,textBeforeCursor:'',textAfterCursor:''},ownAction:false}
-//   });
-
-//   }.bind(this),200);
+  this.app.postMessage({
+    api: 'inputmethod',
+    method: 'setInputContext',
+    ctx: true,
+    selectionStart: 0,
+    selectionEnd: 0,
+    textBeforeCursor: '',
+    textAfterCursor: ''
+  });
   
   this.statusSpan.innerHTML = "Waiting for score";
 };

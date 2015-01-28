@@ -50,6 +50,7 @@
 
     switch (data.method) {
       case 'setInputContext':
+        debugger;
         if (this.inputcontext) {
           this.inputcontext.stop();
         }

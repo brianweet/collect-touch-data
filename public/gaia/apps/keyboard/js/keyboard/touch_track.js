@@ -33,9 +33,12 @@
     this._container.addEventListener('touchmove', this);
     this._container.addEventListener('touchend', this);
     this._container.addEventListener('touchcancel', this);
-    //this._container.addEventListener('mousedown', this);
-    //this._container.addEventListener('mousemove', this);
-    //this._container.addEventListener('mouseup', this);
+    if ('ontouchstart' in window === false){
+      this._container.addEventListener('mousedown', this);
+      this._container.addEventListener('mousemove', this);
+      this._container.addEventListener('mouseup', this);
+    }
+    
 
     window.addEventListener('message', this);
 
@@ -54,9 +57,11 @@
     this._container.removeEventListener('touchmove', this);
     this._container.removeEventListener('touchend', this);
     this._container.removeEventListener('touchcancel', this);
-    //this._container.removeEventListener('mousedown', this);
-    //this._container.removeEventListener('mousemove', this);
-    //this._container.removeEventListener('mouseup', this);
+    if ('ontouchstart' in window === false){
+      this._container.removeEventListener('mousedown', this);
+      this._container.removeEventListener('mousemove', this);
+      this._container.removeEventListener('mouseup', this); 
+    }
 
     window.removeEventListener('message', this);
   }
@@ -93,7 +98,9 @@
       case 'touchmove':
       case 'touchend':
       case 'touchcancel':
-      //case 'mousedown':
+      case 'mousedown':
+      case 'mousemove':
+      case 'mouseup':
         if(!this._isTracking)
           return;
 
@@ -102,8 +109,6 @@
           startTime = eventTime;
         }
         var time = eventTime - startTime;
-
-
 
         if(evt instanceof MouseEvent){
           this.add(evt, evt.type, time);
