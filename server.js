@@ -5,7 +5,7 @@ var nstore = require('nstore');
 //init express
 var app = express();
 app.use(bodyParser.json());
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/gaia-keyboard-demo'));
 
 //init db
 var inited = false;
