@@ -5,6 +5,8 @@ var azure = require('azure-storage');
 var retryOperations = new azure.ExponentialRetryPolicyFilter();
 var tableSvc = azure.createTableService().withFilter(retryOperations);
 var entGen = azure.TableUtilities.entityGenerator;
+var highscoreCacheInvalid = true;
+var highscoreCache = [];
 
 function randomString(length, chars) {
     var result = '';
@@ -37,10 +39,19 @@ tableSvc.createTableIfNotExists('session', function(error, result, response){
 	    	console.error('Cannot create sentence table', error);
 	    	process.exit(1);
 	    }
-        // Table exists or created
-		started = true;
-		app.listen(process.env.PORT || 1337);
-		console.log('Listening at', process.env.PORT || 1337);
+
+	    // Table exists or created
+	    tableSvc.createTableIfNotExists('highscore', function(error, result, response){
+		    if(error){
+		    	console.error('Cannot create highscore table', error);
+		    	process.exit(1);
+		    }
+
+		    // Table exists or created
+			started = true;
+			app.listen(process.env.PORT || 1337);
+			console.log('Listening at', process.env.PORT || 1337);
+		});
 	});
 });
 
@@ -61,6 +72,7 @@ app.post('/api/register', function(req, res, next) {
 		  PartitionKey: entGen.String(newSessionId),
 		  RowKey: entGen.String('1'),
 		  keys: entGen.String(JSON.stringify(req.body.resizeArgs)),
+		  userAgent: entGen.String(req.body.userAgent),
 		  screenDimensions: entGen.String(JSON.stringify(req.body.screenDimensions))
 		};
 
@@ -107,6 +119,74 @@ app.post('/api/sentence/:sessionid', function(req, res, next) {
 	});
 });
 
+app.post('/api/nickname/:sessionid', function(req, res, next){
+	var query = new azure.TableQuery().where('PartitionKey eq ?', req.params.sessionid);
+	tableSvc.queryEntities('sentence',query, null, function(error, result, response) {
+		if(error){
+			console.error('Loading failed', error, req.body);
+			return next(error);
+		}  
+		var totalChars = 0,
+			totalTime = 0,
+			totalWrongChars = 0;
+
+		var resultLength = result.entries.length;
+		for (var i = 0; i < resultLength; i++) {
+			var sentenceResult = JSON.parse(result.entries[i].data._);
+			totalWrongChars += sentenceResult.wrongCharCount;
+			totalChars += sentenceResult.sentence.s.length;
+			totalTime += sentenceResult.data[sentenceResult.data.length-1].time;
+		}
+
+
+		var task = {
+		  PartitionKey: entGen.String(req.params.sessionid),
+		  RowKey: entGen.String("_"),
+		  data: entGen.String(JSON.stringify({tc: totalChars, tt: totalTime, twc: totalWrongChars, nn: req.body.nickname}))
+		};
+
+		tableSvc.insertEntity('highscore', task, function (error, result, response) {
+			if(error)
+				throw error;
+
+			highscoreCacheInvalid = true;
+
+			console.log('highscore');
+			res.send('OK!');
+		});
+	});
+});
+
+app.get('/api/highscore', function(req, res, next){
+	if(highscoreCacheInvalid){
+		var query = new azure.TableQuery();
+		tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
+			if(error){
+				console.error('Loading failed', error, req.body);
+				return next(error);
+			} 
+
+			highscoreCache.length = 0;
+			var resultLength = result.entries.length;
+			for (var i = 0; i < resultLength; i++) {
+				var highscore = JSON.parse(result.entries[i].data._);
+				highscoreCache.push(highscore);
+			}
+			
+		 	highscoreCacheInvalid = false;
+			// query was successful
+			res.send(highscoreCache);
+		});
+	} else {
+		res.send(highscoreCache);
+	}
+});
+
+
+
+
+
+
 app.get('/api/test', function(req, res, next){
 	var query = new azure.TableQuery();
 	tableSvc.queryEntities('session',query, null, function(error, result, response) {
@@ -120,16 +200,26 @@ app.get('/api/test', function(req, res, next){
 	});
 });
 
-app.get('/api/test2', function(req, res, next){
-	var query = new azure.TableQuery();
+app.get('/api/test2/:sessionid', function(req, res, next){
+	var query = new azure.TableQuery().where('PartitionKey eq ?', req.params.sessionid);
 	tableSvc.queryEntities('sentence',query, null, function(error, result, response) {
 		if(error){
 			console.error('Loading failed', error, req.body);
 			return next(error);
 		}  
+		var totalChars = 0,
+			totalTime = 0,
+			totalWrongChars = 0;
 
+		var resultLength = result.entries.length;
+		for (var i = 0; i < resultLength; i++) {
+			var sentenceResult = JSON.parse(result.entries[i].data._);
+			totalWrongChars += sentenceResult.wrongCharCount;
+			totalChars += sentenceResult.sentence.s.length;
+			totalTime += sentenceResult.data[sentenceResult.data.length-1].time;
+		}
 		// query was successful
-		res.send(result);
+		res.send({tc: totalChars, tt: totalTime, twc: totalWrongChars}); 
 	});
 });
 
