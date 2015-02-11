@@ -5,8 +5,6 @@ var azure = require('azure-storage');
 var retryOperations = new azure.ExponentialRetryPolicyFilter();
 var tableSvc = azure.createTableService().withFilter(retryOperations);
 var entGen = azure.TableUtilities.entityGenerator;
-var highscoreCacheInvalid = true;
-var highscoreCache = [];
 
 function randomString(length, chars) {
     var result = '';
@@ -142,14 +140,18 @@ app.post('/api/nickname/:sessionid', function(req, res, next){
 		var task = {
 		  PartitionKey: entGen.String(req.params.sessionid),
 		  RowKey: entGen.String("_"),
-		  data: entGen.String(JSON.stringify({tc: totalChars, tt: totalTime, twc: totalWrongChars, nn: req.body.nickname}))
+		  nickname: 		entGen.String(req.body.nickname),
+		  correctChars: 	entGen.Int32(totalChars - totalWrongChars),
+		  chars: 			entGen.Int32(totalChars),
+		  wrongChars: 		entGen.Int32(totalWrongChars),
+		  error: 			entGen.Double(totalWrongChars * 100 / totalChars),
+		  charPerMinute:    entGen.Double(60000 / totalTime * (totalChars - totalWrongChars)),
+		  totalTime: 		entGen.Int32(totalTime)
 		};
 
 		tableSvc.insertEntity('highscore', task, function (error, result, response) {
 			if(error)
 				throw error;
-
-			highscoreCacheInvalid = true;
 
 			console.log('highscore');
 			res.send('OK!');
@@ -158,70 +160,58 @@ app.post('/api/nickname/:sessionid', function(req, res, next){
 });
 
 app.get('/api/highscore', function(req, res, next){
-	if(highscoreCacheInvalid){
-		var query = new azure.TableQuery();
-		tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
-			if(error){
-				console.error('Loading failed', error, req.body);
-				return next(error);
-			} 
-
-			highscoreCache.length = 0;
-			var resultLength = result.entries.length;
-			for (var i = 0; i < resultLength; i++) {
-				var highscore = JSON.parse(result.entries[i].data._);
-				highscoreCache.push(highscore);
-			}
-			
-		 	highscoreCacheInvalid = false;
-			// query was successful
-			res.send(highscoreCache);
-		});
-	} else {
-		res.send(highscoreCache);
-	}
-});
-
-
-
-
-
-
-app.get('/api/test', function(req, res, next){
 	var query = new azure.TableQuery();
-	tableSvc.queryEntities('session',query, null, function(error, result, response) {
+	tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
 		if(error){
 			console.error('Loading failed', error, req.body);
 			return next(error);
 		} 
 
-		// query was successful
-		res.send(result);
-	});
-});
-
-app.get('/api/test2/:sessionid', function(req, res, next){
-	var query = new azure.TableQuery().where('PartitionKey eq ?', req.params.sessionid);
-	tableSvc.queryEntities('sentence',query, null, function(error, result, response) {
-		if(error){
-			console.error('Loading failed', error, req.body);
-			return next(error);
-		}  
-		var totalChars = 0,
-			totalTime = 0,
-			totalWrongChars = 0;
-
+		var tempResults = [];
 		var resultLength = result.entries.length;
 		for (var i = 0; i < resultLength; i++) {
-			var sentenceResult = JSON.parse(result.entries[i].data._);
-			totalWrongChars += sentenceResult.wrongCharCount;
-			totalChars += sentenceResult.sentence.s.length;
-			totalTime += sentenceResult.data[sentenceResult.data.length-1].time;
+			var highscore = toObject(result.entries[i]);
+			tempResults.push(highscore);
 		}
-		// query was successful
-		res.send({tc: totalChars, tt: totalTime, twc: totalWrongChars}); 
+
+		tempResults.sort(sortHighscore);
+		tempResults = tempResults.slice(0, 20);
+		tempResults = tempResults.map(function(r) { 
+			return {
+				nickname: r.nickname,
+				correctChars: r.correctChars,
+				chars: r.chars,
+				wrongChars: r.wrongChars,
+				error: r.error.toFixed(2),
+				charPerMinute: r.charPerMinute.toFixed(0),
+				totalTime: r.totalTime
+			}; 
+		});
+
+		//TODO: perhaps cache highscore
+		res.send(tempResults);
 	});
 });
+
+function sortHighscore(a, b) {
+	if(a.charPerMinute > b.charPerMinute)
+		return -1;
+	else if(a.charPerMinute < b.charPerMinute)
+		return 1;
+
+	return 0;
+}
+
+function toObject(azureObject){
+	var o = {};
+	for (var prop in azureObject) {
+		if(prop === 'jsonData')
+			o[prop] = JSON.parse(azureObject[prop]._);
+		else
+			o[prop] = azureObject[prop]._;
+	}
+	return o;
+}
 
 
 
