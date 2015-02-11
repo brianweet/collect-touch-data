@@ -171,6 +171,9 @@ app.get('/api/highscore', function(req, res, next){
 		var resultLength = result.entries.length;
 		for (var i = 0; i < resultLength; i++) {
 			var highscore = toObject(result.entries[i]);
+			if(!highscore.score)
+				highscore.score = highscore.charPerMinute * 4 + highscore.correctChars - highscore.wrongChars;
+
 			tempResults.push(highscore);
 		}
 
@@ -182,9 +185,10 @@ app.get('/api/highscore', function(req, res, next){
 				correctChars: r.correctChars,
 				chars: r.chars,
 				wrongChars: r.wrongChars,
-				error: r.error.toFixed(2),
+				error: r.error.toFixed(1),
 				charPerMinute: r.charPerMinute.toFixed(0),
-				totalTime: r.totalTime
+				totalTime: r.totalTime,
+				score: r.score.toFixed(0)
 			}; 
 		});
 
@@ -194,9 +198,9 @@ app.get('/api/highscore', function(req, res, next){
 });
 
 function sortHighscore(a, b) {
-	if(a.charPerMinute > b.charPerMinute)
+	if(a.score > b.score)
 		return -1;
-	else if(a.charPerMinute < b.charPerMinute)
+	else if(a.score < b.score)
 		return 1;
 
 	return 0;
