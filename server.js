@@ -112,7 +112,7 @@ app.post('/api/sentence/:sessionid', function(req, res, next) {
 			console.log('newSentence');
 		    console.log(req.body);
 
-			res.send('OK!');
+			res.send('OK');
 		});
 	});
 });
@@ -120,6 +120,11 @@ app.post('/api/sentence/:sessionid', function(req, res, next) {
 app.post('/api/nickname/:sessionid', function(req, res, next){
 	var query = new azure.TableQuery().where('PartitionKey eq ?', req.params.sessionid);
 	tableSvc.queryEntities('sentence',query, null, function(error, result, response) {
+		if(!req.body || !req.body.nickname){
+			console.error('Need nickname info in body');
+			return next('Need nickname info in body');
+		}
+
 		if(error){
 			console.error('Loading failed', error, req.body);
 			return next(error);
@@ -136,10 +141,12 @@ app.post('/api/nickname/:sessionid', function(req, res, next){
 			totalTime += sentenceResult.data[sentenceResult.data.length-1].time;
 		}
 
+		//for now, just replace 'weird' characters. want to use name as partkey so..		
+		var partKey = req.body.nickname.replace(/[^a-z0-9]/gi, '-');
 
 		var task = {
-		  PartitionKey: entGen.String(req.params.sessionid),
-		  RowKey: entGen.String("_"),
+		  PartitionKey: entGen.String(partKey),
+		  RowKey: entGen.String(req.params.sessionid),
 		  nickname: 		entGen.String(req.body.nickname),
 		  correctChars: 	entGen.Int32(totalChars - totalWrongChars),
 		  chars: 			entGen.Int32(totalChars),
@@ -154,7 +161,7 @@ app.post('/api/nickname/:sessionid', function(req, res, next){
 				throw error;
 
 			console.log('highscore');
-			res.send('OK!');
+			res.send('OK');
 		});
 	});
 });
@@ -172,7 +179,7 @@ app.get('/api/highscore', function(req, res, next){
 		for (var i = 0; i < resultLength; i++) {
 			var highscore = toObject(result.entries[i]);
 			if(!highscore.score)
-				highscore.score = highscore.charPerMinute * 4 + highscore.correctChars - highscore.wrongChars;
+				highscore.score = highscore.correctChars - highscore.wrongChars + highscore.charPerMinute;
 
 			tempResults.push(highscore);
 		}
@@ -196,6 +203,33 @@ app.get('/api/highscore', function(req, res, next){
 		res.send(tempResults);
 	});
 });
+
+// app.get('/api/highscore/all', function(req, res, next){
+// 	var query = new azure.TableQuery();
+// 	tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
+// 		if(error){
+// 			console.error('Loading failed', error, req.body);
+// 			return next(error);
+// 		} 
+
+// 		res.send(result);
+// 	});
+// });
+
+// app.get('/api/del/:pkey/:rkey', function(req, res, next){
+// 	var task = { 
+// 	  PartitionKey: {'_':req.params.pkey},
+// 	  RowKey: {'_': req.params.rkey}
+// 	};
+
+// 	tableSvc.deleteEntity('highscore', task, function(error, response){
+// 	  if(!error) {
+// 	  	console.error('Loading failed', error, req.params);
+// 	  	return next(error);
+// 	  }
+// 	  res.send('OK');
+// 	});
+// });
 
 function sortHighscore(a, b) {
 	if(a.score > b.score)
