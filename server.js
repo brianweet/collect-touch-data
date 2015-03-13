@@ -260,7 +260,7 @@ app.get('/api/results/:nickname', function(req, res, next){
 			return next(err);
 		}
 		if(!result){
-			return next('No highscore found');	
+			return res.send('');	
 		}
 		var count = 0;
 		//TODO: could have multiple highscores here
