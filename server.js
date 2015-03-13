@@ -77,8 +77,11 @@ tableSvc.createTableIfNotExists('session', function(error, result, response){
 //init express
 var app = express();
 app.use(bodyParser.json());
-//app.use(express.static(__dirname + '/gaia-keyboard-demo'));
-app.use(express.static(__dirname + '/temp'));
+if(process.env.DEBUG){
+	app.use(express.static(__dirname + '/temp'));
+} else {
+	app.use(express.static(__dirname + '/gaia-keyboard-demo'));
+}
 
 //register new session
 app.post('/api/register', function(req, res, next) {
@@ -238,7 +241,6 @@ app.get('/api/highscore', function(req, res, next){
 });
 
 app.get('/api/results/:nickname', function(req, res, next){
-	
 	// 
 	// 	[
 	// 	{
@@ -248,16 +250,19 @@ app.get('/api/results/:nickname', function(req, res, next){
 	// 	}
 	// 	]
 	// }
-
+	var byPartKey = req.params.nickname.replace(/[^a-z0-9]/gi, '-');
 	var highscores = [],
 		query = new azure.TableQuery();
-	query.where('PartitionKey eq ?', req.params.nickname);
+	query.where('PartitionKey eq ?', byPartKey);
 
-	getHighScore(query, function(err, result){
+	getHighScore(query, req, function(err, result){
 		if(err){
 			return next(err);
 		}
-
+		if(!result){
+			return next('No highscore found');	
+		}
+		var count = 0;
 		//TODO: could have multiple highscores here
 		result.entries.forEach(function(azureObject, index, array){
 			var hs = toObject(azureObject);
@@ -267,7 +272,7 @@ app.get('/api/results/:nickname', function(req, res, next){
 			var sessionId = hs.RowKey;
 			query = new azure.TableQuery();
 			query.where('PartitionKey eq ?', sessionId);
-			getSession(query, function(err, result){
+			getSession(query, req, function(err, result){
 				if(err){
 					return next(err);
 				}
@@ -277,14 +282,14 @@ app.get('/api/results/:nickname', function(req, res, next){
 
 				query = new azure.TableQuery();
 				query.where('PartitionKey eq ?', sessionId);
-				getSentence(query, function(err, result){
+				getSentence(query, req, function(err, result){
 					if(err){
 						return next(err);
 					}
 					
 					hs.sentences = result;
-
-					if (index === array.length - 1) {
+					count++;
+					if (count === array.length) {
 		             	res.send(highscores);
 		         	}
 				});
@@ -295,44 +300,55 @@ app.get('/api/results/:nickname', function(req, res, next){
 	});
 });
 
-function getHighScore(query, cb){
+function getHighScore(query, req, cb){
 	tableSvc.queryEntities('highscore',query, null, function(hError, hResult, hResponse) {
 		if(hError){
 			console.error('Loading failed', hError, req.body);
 			return cb(hError);
 		} 
 
-		if(!hResult.entries.length){	
+		if(!hResult || !hResult.entries.length){	
 			console.error('Can\'t find highscore.', req.params.nickname);
 			return cb(hError);
 		}
+
+		console.log(hResult.continuationToken)
 
 		cb(null, hResult);
 	});
 };
 
-function getSession(query, cb){
+function getSession(query, req, cb){
 	tableSvc.queryEntities('session', query, null, function(sError, sResult, sResponse) {
 			if(sError){
 				console.error('Loading failed', sError, req.body);
 				return cb(sError);
 			}
 
-			if(!sResult.entries.length){	
+			if(!sResult || !sResult.entries.length){	
 				console.error('Can\'t find session.', req.params.nickname);
 				return cb(sError);
 			}
+
+			console.log(sResult.continuationToken)
 
 		return cb(null, sResult);
 	});
 };
 
-function getSentence(query, cb){
+function getSentence(query, req, cb){
 	tableSvc.queryEntities('sentence', query, null, function(sentenceError, sentenceResult, sentenceResponse) {
 		if(sentenceError){
 			console.error('Loading failed', sentenceError, req.body);
 			return cb(sentenceError);
 		}
+
+		if(!sentenceResult || !sentenceResult.entries.length){	
+			console.error('Can\'t find sentences.', req.params.nickname);
+			return cb(sError);
+		}
+		console.log(sentenceResult.continuationToken)
+
 		var sentences = [];
 		for (var i = 0; i < sentenceResult.entries.length; i++) {
 			var sentence = JSON.parse(sentenceResult.entries[i].data._);
@@ -342,83 +358,6 @@ function getSentence(query, cb){
 		return cb(null, sentences);
 	});
 }
-
-// app.get('/api/highscore/all', function(req, res, next){
-// 	var query = new azure.TableQuery();
-// 	tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
-// 		if(error){
-// 			console.error('Loading failed', error, req.body);
-// 			return next(error);
-// 		} 
-
-// 		res.send(result);
-// 	});
-// });
-
-// app.get('/api/del/:pkey/:rkey', function(req, res, next){
-// 	var task = { 
-// 	  PartitionKey: {'_':req.params.pkey},
-// 	  RowKey: {'_': req.params.rkey}
-// 	};
-
-// 	tableSvc.deleteEntity('highscore', task, function(error, response){
-// 	  if(error) {
-// 	  	console.error('Loading failed', error, req.params);
-// 	  	return next(error);
-// 	  }
-// 	  res.send('OK deleted highscore');
-// 	});
-// });
-
-
-// app.get('/api/add/:sessionid/:nickname', function(req, res, next){
-// 	var query = new azure.TableQuery().where('PartitionKey eq ?', req.params.sessionid);
-// 	tableSvc.queryEntities('sentence',query, null, function(error, result, response) {
-// 		if(!req.params || !req.params.nickname){
-// 			console.error('Need nickname info in body');
-// 			return next('Need nickname info in body');
-// 		}
-
-// 		if(error){
-// 			console.error('Loading failed', error, req.body);
-// 			return next(error);
-// 		}  
-// 		var totalChars = 0,
-// 			totalTime = 0,
-// 			totalWrongChars = 0;
-
-// 		var resultLength = result.entries.length;
-// 		for (var i = 0; i < resultLength; i++) {
-// 			var sentenceResult = JSON.parse(result.entries[i].data._);
-// 			totalWrongChars += sentenceResult.wrongCharCount;
-// 			totalChars += sentenceResult.sentence.s.length;
-// 			totalTime += sentenceResult.data[sentenceResult.data.length-1].time;
-// 		}
-
-// 		//for now, just replace 'weird' characters. want to use name as partkey so..		
-// 		var partKey = req.params.nickname.replace(/[^a-z0-9]/gi, '-');
-
-// 		var task = {
-// 		  PartitionKey: 	entGen.String(partKey),
-// 		  RowKey: 			entGen.String(req.params.sessionid),
-// 		  nickname: 		entGen.String(req.params.nickname),
-// 		  correctChars: 	entGen.Int32(totalChars - totalWrongChars),
-// 		  chars: 			entGen.Int32(totalChars),
-// 		  wrongChars: 		entGen.Int32(totalWrongChars),
-// 		  error: 			entGen.Double(totalWrongChars * 100 / totalChars),
-// 		  charPerMinute:    entGen.Double(60000 / totalTime * (totalChars - totalWrongChars)),
-// 		  totalTime: 		entGen.Int32(totalTime)
-// 		};
-
-// 		tableSvc.insertEntity('highscore', task, function (error, result, response) {
-// 			if(error)
-// 				throw error;
-
-// 			console.log('highscore');
-// 			res.send('OK added highscore');
-// 		});
-// 	});
-// });
 
 
 
