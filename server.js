@@ -140,7 +140,7 @@ app.post('/api/sentence/:sessionid', function(req, res, next) {
 		};
 		tableSvc.insertEntity('sentence', task, function (error, result, response) {
 			if(error)
-				throw error;
+				return next(error);
 
 			console.log('newSentence');
 		    console.log(req.body);
@@ -194,10 +194,10 @@ app.post('/api/nickname/:sessionid', function(req, res, next){
 
 		tableSvc.insertEntity('highscore', task, function (error, result, response) {
 			if(error)
-				throw error;
+				return next(error);
 
 			console.log('highscore');
-			res.send('OK');
+			res.send('Score:' + (task.correctChars._ - task.wrongChars._ + task.charPerMinute._).toFixed(0));
 		});
 	});
 });
@@ -221,7 +221,6 @@ app.get('/api/highscore', function(req, res, next){
 		}
 
 		tempResults.sort(sortHighscore);
-		tempResults = tempResults.slice(0, 20);
 		tempResults = tempResults.map(function(r) { 
 			return {
 				nickname: r.nickname,
@@ -359,6 +358,32 @@ function getSentence(query, req, cb){
 	});
 }
 
+app.get('/api/highscore/all', function(req, res, next){
+	var query = new azure.TableQuery();
+	tableSvc.queryEntities('highscore',query, null, function(error, result, response) {
+		if(error){
+			console.error('Loading failed', error, req.body);
+			return next(error);
+		} 
+
+		res.send(result);
+	});
+});
+
+// app.get('/api/del/:pkey/:rkey', function(req, res, next){
+// 	var task = { 
+// 	  PartitionKey: {'_':req.params.pkey},
+// 	  RowKey: {'_': req.params.rkey}
+// 	};
+
+// 	tableSvc.deleteEntity('highscore', task, function(error, response){
+// 	  if(error) {
+// 	  	console.error('Loading failed', error, req.params);
+// 	  	return next(error);
+// 	  }
+// 	  res.send('OK deleted highscore');
+// 	});
+// });
 
 
 
